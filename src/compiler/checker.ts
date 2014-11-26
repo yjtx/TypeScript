@@ -4274,13 +4274,18 @@ module ts {
             Debug.fail("should not get here");
         }
 
-        // Remove one or more primitive types from a union type
+        // If type is union type - removes one or more primitive types from it
+        // If type is a primitive type that matches subtract mask - returns emptyObjectType
+        // Otherwise returns original type
         function subtractPrimitiveTypes(type: Type, subtractMask: TypeFlags): Type {
             if (type.flags & TypeFlags.Union) {
                 var types = (<UnionType>type).types;
                 if (forEach(types, t => t.flags & subtractMask)) {
                     return getUnionType(filter(types, t => !(t.flags & subtractMask)));
                 }
+            }
+            else if (type.flags & subtractMask) {
+                return emptyObjectType;
             }
             return type;
         }
@@ -4449,10 +4454,16 @@ module ts {
                 else {
                     // The assumed result is false. This means either the first operand was false, or the first operand was true
                     // and the second operand was false. We narrow with those assumptions and union the two resulting types.
-                    return getUnionType([
-                        narrowType(type, expr.left, /*assumeTrue*/ false),
-                        narrowType(narrowType(type, expr.left, /*assumeTrue*/ true), expr.right, /*assumeTrue*/ false)
-                    ]);
+                    var leftIsFalse = narrowType(type, expr.left, /*assumeTrue*/ false);
+                    var leftIsTrue = narrowType(type, expr.left, /*assumeTrue*/ true);
+                    var rightIsFalse = narrowType(leftIsTrue, expr.right, /*assumeTrue*/ false);
+                    if (leftIsFalse === emptyObjectType) {
+                        return rightIsFalse;
+                    }
+                    if (rightIsFalse === emptyObjectType) {
+                        return leftIsFalse;
+                    }
+                    return getUnionType([leftIsFalse, rightIsFalse]);
                 }
             }
 
@@ -4460,10 +4471,16 @@ module ts {
                 if (assumeTrue) {
                     // The assumed result is true. This means either the first operand was true, or the first operand was false
                     // and the second operand was true. We narrow with those assumptions and union the two resulting types.
-                    return getUnionType([
-                        narrowType(type, expr.left, /*assumeTrue*/ true),
-                        narrowType(narrowType(type, expr.left, /*assumeTrue*/ false), expr.right, /*assumeTrue*/ true)
-                    ]);
+                    var leftIsTrue = narrowType(type, expr.left, /*assumeTrue*/ true);
+                    var leftIsFalse = narrowType(type, expr.left, /*assumeTrue*/ false);
+                    var rightIsTrue = narrowType(leftIsFalse, expr.right, /*assumeTrue*/ true);
+                    if (leftIsTrue === emptyObjectType) {
+                        return rightIsTrue;
+                    }
+                    if (rightIsTrue === emptyObjectType) {
+                        return leftIsTrue;
+                    }
+                    return getUnionType([leftIsTrue, rightIsTrue]);
                 }
                 else {
                     // The assumed result is false, therefore we narrow assuming each operand to be false.

@@ -1,0 +1,34 @@
+=== tests/cases/compiler/typeGuardsWithMultipleConditions.ts ===
+var x: string|number;
+>x : string | number
+
+var r4 = typeof x === "string" ? x.substr : x.toFixed; 
+>r4 : (from: number, length?: number) => string
+>typeof x === "string" ? x.substr : x.toFixed : (from: number, length?: number) => string
+>typeof x === "string" : boolean
+>typeof x : string
+>x : string | number
+>x.substr : (from: number, length?: number) => string
+>x : string
+>substr : (from: number, length?: number) => string
+>x.toFixed : (fractionDigits?: number) => string
+>x : number
+>toFixed : (fractionDigits?: number) => string
+
+var r5 = typeof x === "string" && typeof x === "string" ? x.substr : x.toFixed
+>r5 : (from: number, length?: number) => string
+>typeof x === "string" && typeof x === "string" ? x.substr : x.toFixed : (from: number, length?: number) => string
+>typeof x === "string" && typeof x === "string" : boolean
+>typeof x === "string" : boolean
+>typeof x : string
+>x : string | number
+>typeof x === "string" : boolean
+>typeof x : string
+>x : string
+>x.substr : (from: number, length?: number) => string
+>x : string
+>substr : (from: number, length?: number) => string
+>x.toFixed : (fractionDigits?: number) => string
+>x : number
+>toFixed : (fractionDigits?: number) => string
+
