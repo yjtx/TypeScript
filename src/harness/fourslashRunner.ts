@@ -31,54 +31,58 @@ class FourslashRunner extends RunnerBase {
             });
         });
 
-        describe('Generate Tao XML', () => {
-            var invalidReasons: any = {};
-            FourSlash.xmlData.forEach(xml => {
-                if (xml.invalidReason !== null) {
-                    invalidReasons[xml.invalidReason] = (invalidReasons[xml.invalidReason] || 0) + 1;
+        // disable the generation of XML by default,
+        // this saves 5 sec on my machine in run time.
+        if (false) {
+            describe('Generate Tao XML', () => {
+                var invalidReasons: any = {};
+                FourSlash.xmlData.forEach(xml => {
+                    if (xml.invalidReason !== null) {
+                        invalidReasons[xml.invalidReason] = (invalidReasons[xml.invalidReason] || 0) + 1;
+                    }
+                });
+                var invalidReport: { reason: string; count: number }[] = [];
+                for (var reason in invalidReasons) {
+                    if (invalidReasons.hasOwnProperty(reason)) {
+                        invalidReport.push({ reason: reason, count: invalidReasons[reason] });
+                    }
                 }
-            });
-            var invalidReport: { reason: string; count: number }[] = [];
-            for (var reason in invalidReasons) {
-                if (invalidReasons.hasOwnProperty(reason)) {
-                    invalidReport.push({ reason: reason, count: invalidReasons[reason] });
-                }
-            }
-            invalidReport.sort((lhs, rhs) => lhs.count > rhs.count ? -1 : lhs.count === rhs.count ? 0 : 1);
+                invalidReport.sort((lhs, rhs) => lhs.count > rhs.count ? -1 : lhs.count === rhs.count ? 0 : 1);
 
-            var lines: string[] = [];
-            lines.push('<!-- Blocked Test Report');
-            invalidReport.forEach((reasonAndCount) => {
-                lines.push(reasonAndCount.count + ' tests blocked by ' + reasonAndCount.reason);
+                var lines: string[] = [];
+                lines.push('<!-- Blocked Test Report');
+                invalidReport.forEach((reasonAndCount) => {
+                    lines.push(reasonAndCount.count + ' tests blocked by ' + reasonAndCount.reason);
+                });
+                lines.push('-->');
+                lines.push('<TaoTest xmlns="http://microsoft.com/schemas/VSLanguages/TAO">');
+                lines.push('    <InitTest>');
+                lines.push('        <StartTarget />');
+                lines.push('    </InitTest>');
+                lines.push('    <ScenarioList>');
+                FourSlash.xmlData.forEach(xml => {
+                    if (xml.invalidReason !== null) {
+                        lines.push('<!-- Skipped ' + xml.originalName + ', reason: ' + xml.invalidReason + ' -->');
+                    } else {
+                        lines.push('        <Scenario Name="' + xml.originalName + '">');
+                        xml.actions.forEach(action => {
+                            lines.push('            ' + action);
+                        });
+                        lines.push('        </Scenario>');
+                    }
+                });
+                lines.push('    </ScenarioList>');
+                lines.push('    <CleanupScenario>');
+                lines.push('        <CloseAllDocuments />');
+                lines.push('        <CleanupCreatedFiles />');
+                lines.push('    </CleanupScenario>');
+                lines.push('    <CleanupTest>');
+                lines.push('        <CloseTarget />');
+                lines.push('    </CleanupTest>');
+                lines.push('</TaoTest>');
+                Harness.IO.writeFile('built/local/fourslash.xml', lines.join('\r\n'));
             });
-            lines.push('-->');
-            lines.push('<TaoTest xmlns="http://microsoft.com/schemas/VSLanguages/TAO">');
-            lines.push('    <InitTest>');
-            lines.push('        <StartTarget />');
-            lines.push('    </InitTest>');
-            lines.push('    <ScenarioList>');
-            FourSlash.xmlData.forEach(xml => {
-                if (xml.invalidReason !== null) {
-                    lines.push('<!-- Skipped ' + xml.originalName + ', reason: ' + xml.invalidReason + ' -->');
-                } else {
-                    lines.push('        <Scenario Name="' + xml.originalName + '">');
-                    xml.actions.forEach(action => {
-                        lines.push('            ' + action);
-                    });
-                    lines.push('        </Scenario>');
-                }
-            });
-            lines.push('    </ScenarioList>');
-            lines.push('    <CleanupScenario>');
-            lines.push('        <CloseAllDocuments />');
-            lines.push('        <CleanupCreatedFiles />');
-            lines.push('    </CleanupScenario>');
-            lines.push('    <CleanupTest>');
-            lines.push('        <CloseTarget />');
-            lines.push('    </CleanupTest>');
-            lines.push('</TaoTest>');
-            Harness.IO.writeFile('built/local/fourslash.xml', lines.join('\r\n'));
-        });
+        }
     }
 }
 
