@@ -4579,6 +4579,7 @@ module ts {
         // Get the narrowed type of a given symbol at a given location
         function getNarrowedTypeOfSymbol(symbol: Symbol, node: Node) {
             var type = getTypeOfSymbol(symbol);
+            return type;
             // Only narrow when symbol is variable of an object, union, or type parameter type
             if (node && symbol.flags & SymbolFlags.Variable && type.flags & (TypeFlags.ObjectType | TypeFlags.Union | TypeFlags.TypeParameter)) {
                 loop: while (node.parent) {
