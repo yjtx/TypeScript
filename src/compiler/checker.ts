@@ -390,7 +390,7 @@ module ts {
 
             if (!result) {
                 if (nameNotFoundMessage) {
-                    error(errorLocation, nameNotFoundMessage, typeof nameArg === "string" ? nameArg : declarationNameToString(nameArg));
+                    error(errorLocation, nameNotFoundMessage, typeof nameArg === "string" ? nameArg : declarationNameToString(<Identifier>nameArg));
                 }
                 return undefined;
             }
@@ -402,7 +402,7 @@ module ts {
                     // to a local variable in the constructor where the code will be emitted.
                     var propertyName = (<PropertyDeclaration>propertyWithInvalidInitializer).name;
                     error(errorLocation, Diagnostics.Initializer_of_instance_member_variable_0_cannot_reference_identifier_1_declared_in_the_constructor,
-                        declarationNameToString(propertyName), typeof nameArg === "string" ? nameArg : declarationNameToString(nameArg));
+                        declarationNameToString(propertyName), typeof nameArg === "string" ? nameArg : declarationNameToString(<Identifier>nameArg));
                     return undefined;
                 }
                 if (result.flags & SymbolFlags.BlockScopedVariable) {
