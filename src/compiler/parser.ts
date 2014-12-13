@@ -3942,8 +3942,9 @@ module ts {
                 }
                 else {
                     // No parser errors were reported.  Perform our stricter grammar checks.
-                    checkGrammar(sourceText, languageVersion, sourceFile);
-                    syntacticDiagnostics = sourceFile.referenceDiagnostics.concat(sourceFile.grammarDiagnostics);
+                    // checkGrammar(sourceText, languageVersion, sourceFile);
+                    //syntacticDiagnostics = sourceFile.referenceDiagnostics.concat(sourceFile.grammarDiagnostics);
+                    syntacticDiagnostics = sourceFile.referenceDiagnostics.concat([]);
                 }
             }
 
