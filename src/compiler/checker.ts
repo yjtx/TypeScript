@@ -764,7 +764,7 @@ module ts {
                         // if the symbolFromSymbolTable is not external module (it could be if it was determined as ambient external module and would be in globals table)
                         // and if symbolfrom symbolTable or alias resolution matches the symbol, 
                         // check the symbol can be qualified, it is only then this symbol is accessible
-                        return !forEach(symbolFromSymbolTable.declarations, declaration => hasExternalModuleSymbol(declaration)) &&
+                        return !forEach(symbolFromSymbolTable.declarations, hasExternalModuleSymbol) &&
                             canQualifySymbol(symbolFromSymbolTable, meaning);
                     }
                 }
@@ -868,7 +868,7 @@ module ts {
 
                 // This could be a symbol that is not exported in the external module 
                 // or it could be a symbol from different external module that is not aliased and hence cannot be named
-                var symbolExternalModule = forEach(initialSymbol.declarations, declaration => getExternalModuleContainer(declaration));
+                var symbolExternalModule = forEach(initialSymbol.declarations, getExternalModuleContainer);
                 if (symbolExternalModule) {
                     var enclosingExternalModule = getExternalModuleContainer(enclosingDeclaration);
                     if (symbolExternalModule !== enclosingExternalModule) {
@@ -1088,7 +1088,7 @@ module ts {
                         }
                         else {
                             // If we didn't find accessible symbol chain for this symbol, break if this is external module
-                            if (!parentSymbol && ts.forEach(symbol.declarations, declaration => hasExternalModuleSymbol(declaration))) {
+                            if (!parentSymbol && ts.forEach(symbol.declarations, hasExternalModuleSymbol)) {
                                 return;
                             }
 
@@ -4102,7 +4102,7 @@ module ts {
                     return anyType;
                 }
                 if (type.flags & TypeFlags.Union) {
-                    return getUnionType(map((<UnionType>type).types, t => getWidenedType(t)));
+                    return getUnionType(map((<UnionType>type).types, getWidenedType));
                 }
                 if (isTypeOfObjectLiteral(type)) {
                     return getWidenedTypeOfObjectLiteral(type);
@@ -4539,7 +4539,9 @@ module ts {
                 }
             }
 
-            ts.forEach(containerNodes, node => { getTypeOfNode(node); });
+            for (var i = 0, len = containerNodes.length; i < len; ++i) {
+                getTypeOfNode(containerNodes[i]);
+            }
         }
 
         function getSymbolAtLocation(node: Node): Symbol {
@@ -5075,7 +5077,7 @@ module ts {
 
         // Return true if the given contextual type is a tuple-like type
         function contextualTypeIsTupleLikeType(type: Type): boolean {
-            return !!(type.flags & TypeFlags.Union ? forEach((<UnionType>type).types, t => isTupleLikeType(t)) : isTupleLikeType(type));
+            return !!(type.flags & TypeFlags.Union ? forEach((<UnionType>type).types, isTupleLikeType) : isTupleLikeType(type));
         }
 
         // Return true if the given contextual type provides an index signature of the given kind
