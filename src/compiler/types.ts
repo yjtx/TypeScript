@@ -1268,7 +1268,9 @@ module ts {
     }
 
     // Object types (TypeFlags.ObjectType)
-    export interface ObjectType extends Type { }
+    export interface ObjectType extends Type {
+        objectLiteralTypeHint?: number;
+    }
 
     // Class and interface types (TypeFlags.Class and TypeFlags.Interface)
     export interface InterfaceType extends ObjectType {
@@ -1311,7 +1313,7 @@ module ts {
         callSignatures: Signature[];       // Call signatures of type
         constructSignatures: Signature[];  // Construct signatures of type
         stringIndexType: Type;             // String index type
-        numberIndexType: Type;             // Numeric index type
+        numberIndexType: Type;             // Numeric index type        
     }
 
     // Type parameters (TypeFlags.TypeParameter)

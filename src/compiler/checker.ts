@@ -106,6 +106,8 @@ module ts {
 
         var anyArrayType: Type;
 
+        var objectLiteralTypeHintCounter = 0;
+        var objectLiteralTypeHints: Map<number> = {};
         var tupleTypes: Map<TupleType> = {};
         var unionTypes: Map<UnionType> = {};
         var stringLiteralTypes: Map<StringLiteralType> = {};
@@ -3573,6 +3575,11 @@ module ts {
             // equal and infinitely expanding. Fourth, if we have reached a depth of 100 nested comparisons, assume we have runaway recursion
             // and issue an error. Otherwise, actually compare the structure of the two types.
             function objectTypeRelatedTo(source: ObjectType, target: ObjectType, reportErrors: boolean): Ternary {
+                if (source.objectLiteralTypeHint !== undefined && 
+                    target.objectLiteralTypeHint !== undefined &&
+                    source.objectLiteralTypeHint === target.objectLiteralTypeHint) {
+                    return Ternary.True;
+                }
                 if (overflow) {
                     return Ternary.False;
                 }
@@ -5309,20 +5316,22 @@ module ts {
             var properties: SymbolTable = {};
             var contextualType = getContextualType(node);
             var typeFlags: TypeFlags;
+            var typeHintParts: string[];
             for (var id in members) {
                 if (hasProperty(members, id)) {
                     var member = members[id];
+                    var type: Type;
                     if (member.flags & SymbolFlags.Property || isObjectLiteralMethod(member.declarations[0])) {
                         var memberDecl = <ObjectLiteralElement>member.declarations[0];
                         if (memberDecl.kind === SyntaxKind.PropertyAssignment) {
-                            var type = checkExpression((<PropertyAssignment>memberDecl).initializer, contextualMapper);
+                            type = checkExpression((<PropertyAssignment>memberDecl).initializer, contextualMapper);
                         }
                         else if (memberDecl.kind === SyntaxKind.MethodDeclaration) {
-                            var type = checkObjectLiteralMethod(<MethodDeclaration>memberDecl, contextualMapper);
+                            type = checkObjectLiteralMethod(<MethodDeclaration>memberDecl, contextualMapper);
                         }
                         else {
                             Debug.assert(memberDecl.kind === SyntaxKind.ShorthandPropertyAssignment);
-                            var type = memberDecl.name.kind === SyntaxKind.ComputedPropertyName
+                            type = memberDecl.name.kind === SyntaxKind.ComputedPropertyName
                                 ? unknownType
                                 : checkExpression(<Identifier>memberDecl.name, contextualMapper);
                         }
@@ -5347,20 +5356,45 @@ module ts {
                         var getAccessor = <AccessorDeclaration>getDeclarationOfKind(member, SyntaxKind.GetAccessor);
                         if (getAccessor) {
                             checkAccessorDeclaration(getAccessor);
+                            type = getTypeOfAccessors(member);
                         }
 
                         var setAccessor = <AccessorDeclaration>getDeclarationOfKind(member, SyntaxKind.SetAccessor);
                         if (setAccessor) {
                             checkAccessorDeclaration(setAccessor);
+                            type = type || getTypeOfAccessors(member);
                         }
                     }
                     properties[member.name] = member;
+                    if (type) {
+                        (typeHintParts || (typeHintParts = [])).push(member.name + "" + type.id);
+                    }
                 }
             }
+
             var stringIndexType = getIndexType(IndexKind.String);
             var numberIndexType = getIndexType(IndexKind.Number);
+
+            if (typeHintParts) {
+                typeHintParts = typeHintParts.sort();
+                if (stringIndexType) {
+                    typeHintParts.push("__s" + stringIndexType.id);
+                }
+                if (numberIndexType) {
+                    typeHintParts.push("__n" + numberIndexType.id);
+                }
+                var typeHint = typeHintParts.join("|");
+            }
             var result = createAnonymousType(node.symbol, properties, emptyArray, emptyArray, stringIndexType, numberIndexType);
             result.flags |= (typeFlags & TypeFlags.Unwidened);
+            if (typeHint) {
+                if (hasProperty(objectLiteralTypeHints, typeHint)) {
+                    result.objectLiteralTypeHint = objectLiteralTypeHints[typeHint];
+                }
+                else {
+                    result.objectLiteralTypeHint = objectLiteralTypeHints[typeHint] = ++objectLiteralTypeHintCounter;
+                }
+            }
             return result;
 
             function getIndexType(kind: IndexKind) {
