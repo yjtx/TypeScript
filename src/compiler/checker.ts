@@ -105,9 +105,7 @@ module ts {
         var globalTemplateStringsArrayType: ObjectType;
 
         var anyArrayType: Type;
-
-        var objectLiteralTypeHintCounter = 0;
-        var objectLiteralTypeHints: Map<number> = {};
+        var objectLiteralTypes: Map<Type> = {};
         var tupleTypes: Map<TupleType> = {};
         var unionTypes: Map<UnionType> = {};
         var stringLiteralTypes: Map<StringLiteralType> = {};
@@ -3575,11 +3573,6 @@ module ts {
             // equal and infinitely expanding. Fourth, if we have reached a depth of 100 nested comparisons, assume we have runaway recursion
             // and issue an error. Otherwise, actually compare the structure of the two types.
             function objectTypeRelatedTo(source: ObjectType, target: ObjectType, reportErrors: boolean): Ternary {
-                if (source.objectLiteralTypeHint !== undefined && 
-                    target.objectLiteralTypeHint !== undefined &&
-                    source.objectLiteralTypeHint === target.objectLiteralTypeHint) {
-                    return Ternary.True;
-                }
                 if (overflow) {
                     return Ternary.False;
                 }
@@ -5385,15 +5378,15 @@ module ts {
                 }
                 var typeHint = typeHintParts.join("|");
             }
+
+            if (typeHint && hasProperty(objectLiteralTypes, typeHint)) {
+                return lookUp(objectLiteralTypes, typeHint);
+            }
+
             var result = createAnonymousType(node.symbol, properties, emptyArray, emptyArray, stringIndexType, numberIndexType);
             result.flags |= (typeFlags & TypeFlags.Unwidened);
             if (typeHint) {
-                if (hasProperty(objectLiteralTypeHints, typeHint)) {
-                    result.objectLiteralTypeHint = objectLiteralTypeHints[typeHint];
-                }
-                else {
-                    result.objectLiteralTypeHint = objectLiteralTypeHints[typeHint] = ++objectLiteralTypeHintCounter;
-                }
+                objectLiteralTypes[typeHint] = result;
             }
             return result;
 
