@@ -640,6 +640,14 @@ compileFile(perftscJsPath, [perftscPath], [tscFile, perftscPath, "tests/perfsys.
 desc("Builds augmented version of the compiler for perf tests");
 task("perftsc", [perftscJsPath]);
 
+// Perf compiler
+var wperftscPath = "tests/webtsc.ts";
+var wperftscJsPath = "built/local/webtsc.js";
+compileFile(wperftscJsPath, [wperftscPath], [tscFile, wperftscPath, "tests/websys.ts"].concat(libraryTargets), [], /*useBuiltCompiler*/ true);
+desc("Builds augmented version of the compiler for perf tests");
+task("webtsc", [wperftscJsPath]);
+
+
 // Instrumented compiler
 var loggedIOpath = harnessDirectory + 'loggedIO.ts';
 var loggedIOJsPath = builtLocalDirectory + 'loggedIO.js';

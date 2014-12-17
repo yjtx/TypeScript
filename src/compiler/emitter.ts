@@ -3576,8 +3576,9 @@ module ts {
             }
 
             function emitModuleDeclaration(node: ModuleDeclaration) {
-                var shouldEmit = getModuleInstanceState(node) === ModuleInstanceState.Instantiated ||
-                    (getModuleInstanceState(node) === ModuleInstanceState.ConstEnumOnly && compilerOptions.preserveConstEnums);
+                var moduleInstanceState = getModuleInstanceState(node);
+                var shouldEmit = moduleInstanceState === ModuleInstanceState.Instantiated ||
+                    (moduleInstanceState === ModuleInstanceState.ConstEnumOnly && compilerOptions.preserveConstEnums);
 
                 if (!shouldEmit) {
                     return emitPinnedOrTripleSlashComments(node);
