@@ -5405,7 +5405,7 @@ module ts {
                     }
                     properties[member.name] = member;
                     if (type) {
-                        (typeHintParts || (typeHintParts = [])).push(member.name + "" + type.id);
+                        (typeHintParts || (typeHintParts = [])).push(member.name + ":" + type.id);
                     }
                 }
             }
@@ -5415,13 +5415,14 @@ module ts {
 
             if (typeHintParts) {
                 typeHintParts = typeHintParts.sort();
+                var typeHint = typeHintParts.join(";");
                 if (stringIndexType) {
-                    typeHintParts.push("__s" + stringIndexType.id);
+                    typeHint += "|s" + stringIndexType.id
                 }
                 if (numberIndexType) {
-                    typeHintParts.push("__n" + numberIndexType.id);
+                    typeHint += "|n" + numberIndexType.id
                 }
-                var typeHint = typeHintParts.join("|");
+                
             }
 
             if (typeHint && hasProperty(objectLiteralTypes, typeHint)) {
