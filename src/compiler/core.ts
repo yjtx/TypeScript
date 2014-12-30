@@ -153,6 +153,12 @@ module ts {
 
     var hasOwnProperty = Object.prototype.hasOwnProperty;
 
+    export function copyMap<T>(source: Map<T>, target: Map<T>): void {
+        for (var id in source) {
+            target[p] = source[p];
+        }
+    }
+
     export function hasProperty<T>(map: Map<T>, key: string): boolean {
         return hasOwnProperty.call(map, key);
     }
