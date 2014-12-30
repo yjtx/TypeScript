@@ -9,8 +9,6 @@ tests/cases/compiler/genericAssignmentCompatWithInterfaces1.ts(13,5): error TS23
   Types of property 'x' are incompatible.
     Type 'A<number>' is not assignable to type 'Comparable<string>'.
 tests/cases/compiler/genericAssignmentCompatWithInterfaces1.ts(16,5): error TS2322: Type '{ x: A<number>; }' is not assignable to type 'I<string>'.
-  Types of property 'x' are incompatible.
-    Type 'A<number>' is not assignable to type 'Comparable<string>'.
 tests/cases/compiler/genericAssignmentCompatWithInterfaces1.ts(17,5): error TS2322: Type 'K<number>' is not assignable to type 'I<string>'.
   Types of property 'x' are incompatible.
     Type 'A<number>' is not assignable to type 'Comparable<string>'.
@@ -47,8 +45,6 @@ tests/cases/compiler/genericAssignmentCompatWithInterfaces1.ts(17,5): error TS23
     var a3: I<string> = z;
         ~~
 !!! error TS2322: Type '{ x: A<number>; }' is not assignable to type 'I<string>'.
-!!! error TS2322:   Types of property 'x' are incompatible.
-!!! error TS2322:     Type 'A<number>' is not assignable to type 'Comparable<string>'.
     var a4: I<string> = <K<number>>z;
         ~~
 !!! error TS2322: Type 'K<number>' is not assignable to type 'I<string>'.

@@ -44,12 +44,10 @@ tests/cases/conformance/types/typeRelationships/assignmentCompatibility/assignme
   Property ''1.'' is missing in type 'S2'.
 tests/cases/conformance/types/typeRelationships/assignmentCompatibility/assignmentCompatWithObjectMembersStringNumericNames.ts(77,5): error TS2322: Type '{ '1.0': string; }' is not assignable to type '{ '1.': string; bar?: string; }'.
   Property ''1.'' is missing in type '{ '1.0': string; }'.
-tests/cases/conformance/types/typeRelationships/assignmentCompatibility/assignmentCompatWithObjectMembersStringNumericNames.ts(78,5): error TS2322: Type '{ 1.: string; }' is not assignable to type '{ '1.': string; bar?: string; }'.
-  Property ''1.'' is missing in type '{ 1.: string; }'.
-tests/cases/conformance/types/typeRelationships/assignmentCompatibility/assignmentCompatWithObjectMembersStringNumericNames.ts(80,5): error TS2322: Type '{ 1.: string; }' is not assignable to type '{ '1.0': string; }'.
-  Property ''1.0'' is missing in type '{ 1.: string; }'.
-tests/cases/conformance/types/typeRelationships/assignmentCompatibility/assignmentCompatWithObjectMembersStringNumericNames.ts(81,5): error TS2322: Type '{ '1.0': string; }' is not assignable to type '{ 1.: string; }'.
-  Property '1.' is missing in type '{ '1.0': string; }'.
+tests/cases/conformance/types/typeRelationships/assignmentCompatibility/assignmentCompatWithObjectMembersStringNumericNames.ts(78,5): error TS2322: Type '{ '1': string; }' is not assignable to type '{ '1.': string; bar?: string; }'.
+  Property ''1.'' is missing in type '{ '1': string; }'.
+tests/cases/conformance/types/typeRelationships/assignmentCompatibility/assignmentCompatWithObjectMembersStringNumericNames.ts(80,5): error TS2322: Type '{ '1': string; }' is not assignable to type '{ '1.0': string; }'.
+tests/cases/conformance/types/typeRelationships/assignmentCompatibility/assignmentCompatWithObjectMembersStringNumericNames.ts(81,5): error TS2322: Type '{ '1.0': string; }' is not assignable to type '{ '1': string; }'.
 tests/cases/conformance/types/typeRelationships/assignmentCompatibility/assignmentCompatWithObjectMembersStringNumericNames.ts(82,5): error TS2322: Type '{ 1.0: string; baz?: string; }' is not assignable to type '{ '1.0': string; }'.
   Property ''1.0'' is missing in type '{ 1.0: string; baz?: string; }'.
 tests/cases/conformance/types/typeRelationships/assignmentCompatibility/assignmentCompatWithObjectMembersStringNumericNames.ts(83,5): error TS2322: Type 'T2' is not assignable to type '{ '1.0': string; }'.
@@ -207,17 +205,15 @@ tests/cases/conformance/types/typeRelationships/assignmentCompatibility/assignme
 !!! error TS2322:   Property ''1.'' is missing in type '{ '1.0': string; }'.
         a = b2; // error
         ~
-!!! error TS2322: Type '{ 1.: string; }' is not assignable to type '{ '1.': string; bar?: string; }'.
-!!! error TS2322:   Property ''1.'' is missing in type '{ 1.: string; }'.
+!!! error TS2322: Type '{ '1': string; }' is not assignable to type '{ '1.': string; bar?: string; }'.
+!!! error TS2322:   Property ''1.'' is missing in type '{ '1': string; }'.
     
         a2 = b2; // error
         ~~
-!!! error TS2322: Type '{ 1.: string; }' is not assignable to type '{ '1.0': string; }'.
-!!! error TS2322:   Property ''1.0'' is missing in type '{ 1.: string; }'.
+!!! error TS2322: Type '{ '1': string; }' is not assignable to type '{ '1.0': string; }'.
         b2 = a2; // error
         ~~
-!!! error TS2322: Type '{ '1.0': string; }' is not assignable to type '{ 1.: string; }'.
-!!! error TS2322:   Property '1.' is missing in type '{ '1.0': string; }'.
+!!! error TS2322: Type '{ '1.0': string; }' is not assignable to type '{ '1': string; }'.
         a2 = b; // error
         ~~
 !!! error TS2322: Type '{ 1.0: string; baz?: string; }' is not assignable to type '{ '1.0': string; }'.

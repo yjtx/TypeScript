@@ -70,7 +70,7 @@ declare var o: {
 };
 declare var b: number;
 declare var o1: {
-    __proto__: number;
+    "__proto__": number;
 };
 declare var b1: number;
 declare var ___proto__: number;
@@ -79,7 +79,7 @@ declare var o2: {
 };
 declare var b2: number;
 declare var o3: {
-    ___proto__: number;
+    "___proto__": number;
 };
 declare var b3: number;
 declare var _proto__: number;
@@ -88,6 +88,6 @@ declare var o4: {
 };
 declare var b4: number;
 declare var o5: {
-    _proto__: number;
+    "_proto__": number;
 };
 declare var b5: number;

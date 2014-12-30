@@ -12,7 +12,6 @@ tests/cases/compiler/typeMatch2.ts(22,5): error TS2322: Type '{ f1: number; f2: 
     Type 'Animal[]' is not assignable to type 'Giraffe[]'.
       Type 'Animal' is not assignable to type 'Giraffe'.
 tests/cases/compiler/typeMatch2.ts(35,5): error TS2322: Type '{ x: number; }' is not assignable to type '{ x: number; y: number; }'.
-  Property 'y' is missing in type '{ x: number; }'.
 
 
 ==== tests/cases/compiler/typeMatch2.ts (6 errors) ====
@@ -71,7 +70,6 @@ tests/cases/compiler/typeMatch2.ts(35,5): error TS2322: Type '{ x: number; }' is
         a = { x: 1 }; // error
         ~
 !!! error TS2322: Type '{ x: number; }' is not assignable to type '{ x: number; y: number; }'.
-!!! error TS2322:   Property 'y' is missing in type '{ x: number; }'.
         var mf = function m(n) { return false; };
         var zf = function z(n: number) { return true; };
         mf=zf;

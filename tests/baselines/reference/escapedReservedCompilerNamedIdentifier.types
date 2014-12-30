@@ -15,8 +15,8 @@ var b = o["__proto__"];
 >o : { "__proto__": number; }
 
 var o1 = {
->o1 : { __proto__: number; }
->{    __proto__: 0} : { __proto__: number; }
+>o1 : { "__proto__": number; }
+>{    __proto__: 0} : { "__proto__": number; }
 
     __proto__: 0
 >__proto__ : number
@@ -25,7 +25,7 @@ var o1 = {
 var b1 = o1["__proto__"];
 >b1 : number
 >o1["__proto__"] : number
->o1 : { __proto__: number; }
+>o1 : { "__proto__": number; }
 
 // Triple underscores
 var ___proto__ = 10;
@@ -43,8 +43,8 @@ var b2 = o2["___proto__"];
 >o2 : { "___proto__": number; }
 
 var o3 = {
->o3 : { ___proto__: number; }
->{    ___proto__: 0} : { ___proto__: number; }
+>o3 : { "___proto__": number; }
+>{    ___proto__: 0} : { "___proto__": number; }
 
     ___proto__: 0
 >___proto__ : number
@@ -53,7 +53,7 @@ var o3 = {
 var b3 = o3["___proto__"];
 >b3 : number
 >o3["___proto__"] : number
->o3 : { ___proto__: number; }
+>o3 : { "___proto__": number; }
 
 // One underscore
 var _proto__ = 10;
@@ -71,8 +71,8 @@ var b4 = o4["_proto__"];
 >o4 : { "_proto__": number; }
 
 var o5 = {
->o5 : { _proto__: number; }
->{    _proto__: 0} : { _proto__: number; }
+>o5 : { "_proto__": number; }
+>{    _proto__: 0} : { "_proto__": number; }
 
     _proto__: 0
 >_proto__ : number
@@ -81,5 +81,5 @@ var o5 = {
 var b5 = o5["_proto__"];
 >b5 : number
 >o5["_proto__"] : number
->o5 : { _proto__: number; }
+>o5 : { "_proto__": number; }
 
