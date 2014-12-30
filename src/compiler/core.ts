@@ -155,7 +155,7 @@ module ts {
 
     export function copyMap<T>(source: Map<T>, target: Map<T>): void {
         for (var id in source) {
-            target[p] = source[p];
+            target[id] = source[id];
         }
     }
 
