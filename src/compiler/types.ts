@@ -218,7 +218,7 @@ module ts {
         TryStatement,
         DebuggerStatement,
         VariableDeclaration,
-        VariableDeclarationList,
+        VariableDeclarationList1,
         FunctionDeclaration,
         ClassDeclaration,
         InterfaceDeclaration,
@@ -346,6 +346,7 @@ module ts {
     }
 
     export interface NodeArray<T> extends Array<T>, TextRange {
+        kind?: SyntaxKind;
         hasTrailingComma?: boolean;
     }
 
@@ -392,15 +393,13 @@ module ts {
 
     // SyntaxKind.VariableDeclaration
     export interface VariableDeclaration extends Declaration {
-        parent?: VariableDeclarationList;
+        parent?: Node;
         name: Identifier | BindingPattern;  // Declared variable name
         type?: TypeNode;                    // Optional type annotation
         initializer?: Expression;           // Optional initializer
     }
 
-    export interface VariableDeclarationList extends Node {
-        declarations: NodeArray<VariableDeclaration>;
-    }
+    export type VariableDeclarationList = NodeArray<VariableDeclaration>;
 
     // SyntaxKind.Parameter
     export interface ParameterDeclaration extends Declaration {

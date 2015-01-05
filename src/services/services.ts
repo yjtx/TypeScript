@@ -801,7 +801,7 @@ module ts {
                             // fall through
                         case SyntaxKind.Constructor:
                         case SyntaxKind.VariableStatement:
-                        case SyntaxKind.VariableDeclarationList:
+                        case SyntaxKind.VariableDeclarationList1:
                         case SyntaxKind.ObjectBindingPattern:
                         case SyntaxKind.ArrayBindingPattern:
                         case SyntaxKind.ModuleBlock:
@@ -2425,7 +2425,7 @@ module ts {
                     switch (previousToken.kind) {
                         case SyntaxKind.CommaToken:
                             return containingNodeKind === SyntaxKind.VariableDeclaration ||
-                                containingNodeKind === SyntaxKind.VariableDeclarationList ||
+                                containingNodeKind === SyntaxKind.VariableDeclarationList1 ||
                                 containingNodeKind === SyntaxKind.VariableStatement ||
                                 containingNodeKind === SyntaxKind.EnumDeclaration ||           // enum a { foo, |
                                 isFunction(containingNodeKind);

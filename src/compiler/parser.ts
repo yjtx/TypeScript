@@ -159,9 +159,9 @@ module ts {
                     child((<SourceFile>node).endOfFileToken);
             case SyntaxKind.VariableStatement:
                 return children(node.modifiers) ||
-                    child((<VariableStatement>node).declarationList);
-            case SyntaxKind.VariableDeclarationList:
-                return children((<VariableDeclarationList>node).declarations);
+                    children((<VariableStatement>node).declarationList);
+            //case SyntaxKind.VariableDeclarationList:
+            //    return children((<VariableDeclarationList>node).declarations);
             case SyntaxKind.ExpressionStatement:
                 return child((<ExpressionStatement>node).expression);
             case SyntaxKind.IfStatement:
@@ -175,12 +175,30 @@ module ts {
                 return child((<WhileStatement>node).expression) ||
                     child((<WhileStatement>node).statement);
             case SyntaxKind.ForStatement:
-                return child((<ForStatement>node).initializer) ||
+                var t: T;
+                if ((<ForStatement>node).initializer) {
+                    if ((<ForStatement>node).initializer.kind === SyntaxKind.VariableDeclarationList1) {
+                        t = children(<VariableDeclarationList>(<ForStatement>node).initializer)
+                    }
+                    else {
+                        t = child(<Expression>(<ForStatement>node).initializer)
+                    }
+                }
+                return  t ||
                     child((<ForStatement>node).condition) ||
                     child((<ForStatement>node).iterator) ||
                     child((<ForStatement>node).statement);
             case SyntaxKind.ForInStatement:
-                return child((<ForInStatement>node).initializer) ||
+                var t: T;
+                if ((<ForInStatement>node).initializer) {
+                    if ((<ForInStatement>node).initializer.kind === SyntaxKind.VariableDeclarationList1) {
+                        t = children(<VariableDeclarationList>(<ForInStatement>node).initializer)
+                    }
+                    else {
+                        t = child(<Expression>(<ForInStatement>node).initializer)
+                    }
+                }
+                return t ||
                     child((<ForInStatement>node).expression) ||
                     child((<ForInStatement>node).statement);
             case SyntaxKind.ContinueStatement:
@@ -4141,16 +4159,16 @@ module ts {
         }
 
         function parseVariableDeclarationList(disallowIn: boolean): VariableDeclarationList {
-            var node = <VariableDeclarationList>createNode(SyntaxKind.VariableDeclarationList);
-
+            // var node = <VariableDeclarationList>createNode(SyntaxKind.VariableDeclarationList);
+            var flags: NodeFlags = 0;
             switch (token) {
                 case SyntaxKind.VarKeyword:
                     break;
                 case SyntaxKind.LetKeyword:
-                    node.flags |= NodeFlags.Let;
+                    flags |= NodeFlags.Let;
                     break;
                 case SyntaxKind.ConstKeyword:
-                    node.flags |= NodeFlags.Const;
+                    flags |= NodeFlags.Const;
                     break;
                 default:
                     Debug.fail();
@@ -4160,11 +4178,14 @@ module ts {
             var savedDisallowIn = inDisallowInContext();
             setDisallowInContext(disallowIn);
 
-            node.declarations = parseDelimitedList(ParsingContext.VariableDeclarations, parseVariableDeclaration);
-
+            var declarations = parseDelimitedList(ParsingContext.VariableDeclarations, parseVariableDeclaration);
+            declarations.kind = SyntaxKind.VariableDeclarationList1;
+            for (var i = 0, len = declarations.length; i < len; ++i) {
+                declarations[i].flags = flags;
+            }
             setDisallowInContext(savedDisallowIn);
 
-            return finishNode(node);
+            return declarations;
         }
 
         function parseVariableStatement(fullStart: number, modifiers: ModifiersArray): VariableStatement {
@@ -4311,7 +4332,7 @@ module ts {
                     modifiers.pos = modifierStart;
                 }
                 flags |= modifierToFlag(modifierKind);
-                modifiers.push(finishNode(createNode(modifierKind, modifierStart)));
+                // modifiers.push(finishNode(createNode(modifierKind, modifierStart)));
             }
             if (modifiers) {
                 modifiers.flags = flags;

@@ -255,7 +255,7 @@ module ts {
             node = node.parent;
         }
 
-        if (node && node.kind === SyntaxKind.VariableDeclarationList) {
+        if (node && node.kind === SyntaxKind.VariableDeclarationList1) {
             flags |= node.flags;
             node = node.parent;
         }
@@ -505,12 +505,12 @@ module ts {
                         return (<ExpressionStatement>parent).expression === node;
                     case SyntaxKind.ForStatement:
                         var forStatement = <ForStatement>parent;
-                        return (forStatement.initializer === node && forStatement.initializer.kind !== SyntaxKind.VariableDeclarationList) ||
+                        return (<Expression>forStatement.initializer === node && forStatement.initializer.kind !== SyntaxKind.VariableDeclarationList1) ||
                             forStatement.condition === node ||
                             forStatement.iterator === node;
                     case SyntaxKind.ForInStatement:
                         var forInStatement = <ForInStatement>parent;
-                        return (forInStatement.initializer === node && forInStatement.initializer.kind !== SyntaxKind.VariableDeclarationList) ||
+                        return (<Expression>forInStatement.initializer === node && forInStatement.initializer.kind !== SyntaxKind.VariableDeclarationList1) ||
                             forInStatement.expression === node;
                     case SyntaxKind.TypeAssertionExpression:
                         return node === (<TypeAssertion>parent).expression;

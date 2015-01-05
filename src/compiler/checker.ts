@@ -1617,7 +1617,7 @@ module ts {
 
             // Parent chain: 
             // VaribleDeclaration -> VariableDeclarationList -> VariableStatement -> 'Declaration Container'
-            return node.kind === SyntaxKind.VariableDeclaration ? node.parent.parent.parent : node.parent;
+            return node.kind === SyntaxKind.VariableDeclaration ? node.parent.parent : node.parent;
         }
 
         function getTypeOfPrototypeProperty(prototype: Symbol): Type {
@@ -1691,7 +1691,7 @@ module ts {
         // Return the inferred type for a variable, parameter, or property declaration
         function getTypeForVariableLikeDeclaration(declaration: VariableLikeDeclaration): Type {
             // A variable declared in a for..in statement is always of type any
-            if (declaration.parent.parent.kind === SyntaxKind.ForInStatement) {
+            if (declaration.parent.kind === SyntaxKind.ForInStatement) {
                 return anyType;
             }
             if (isBindingPattern(declaration.parent)) {
@@ -8133,7 +8133,7 @@ module ts {
             // Grammar checking
             checkGrammarDisallowedModifiersInBlockOrObjectLiteralExpression(node) || checkGrammarModifiers(node) || checkGrammarVariableDeclarationList(node.declarationList) || checkGrammarForDisallowedLetOrConstStatement(node);
 
-            forEach(node.declarationList.declarations, checkSourceElement);
+            forEach(node.declarationList, checkSourceElement);
         }
 
         function checkGrammarDisallowedModifiersInBlockOrObjectLiteralExpression(node: Node) {
@@ -8189,14 +8189,14 @@ module ts {
         function checkForStatement(node: ForStatement) {
             // Grammar checking
             if (!checkGrammarForStatementInAmbientContext(node)) {
-                if (node.initializer && node.initializer.kind == SyntaxKind.VariableDeclarationList) {
+                if (node.initializer && node.initializer.kind == SyntaxKind.VariableDeclarationList1) {
                     checkGrammarVariableDeclarationList(<VariableDeclarationList>node.initializer);
                 }
             }
 
             if (node.initializer) {
-                if (node.initializer.kind === SyntaxKind.VariableDeclarationList) {
-                    forEach((<VariableDeclarationList>node.initializer).declarations, checkVariableDeclaration)
+                if (node.initializer.kind === SyntaxKind.VariableDeclarationList1) {
+                    forEach((<VariableDeclarationList>node.initializer), checkVariableDeclaration)
                 }
                 else {
                     checkExpression(<Expression>node.initializer)
@@ -8211,11 +8211,11 @@ module ts {
         function checkForInStatement(node: ForInStatement) {
             // Grammar checking 
             if (!checkGrammarForStatementInAmbientContext(node)) {
-                if (node.initializer.kind === SyntaxKind.VariableDeclarationList) {
+                if (node.initializer.kind === SyntaxKind.VariableDeclarationList1) {
                     var variableList = <VariableDeclarationList>node.initializer;
                     if (!checkGrammarVariableDeclarationList(variableList)) {
-                        if (variableList.declarations.length > 1) {
-                            grammarErrorOnFirstToken(variableList.declarations[1], Diagnostics.Only_a_single_variable_declaration_is_allowed_in_a_for_in_statement);
+                        if (variableList.length > 1) {
+                            grammarErrorOnFirstToken(variableList[1], Diagnostics.Only_a_single_variable_declaration_is_allowed_in_a_for_in_statement);
                         }
                     }
                 }
@@ -8226,10 +8226,10 @@ module ts {
             // for (var VarDecl in Expr) Statement
             //   VarDecl must be a variable declaration without a type annotation that declares a variable of type Any,
             //   and Expr must be an expression of type Any, an object type, or a type parameter type.                        
-            if (node.initializer.kind === SyntaxKind.VariableDeclarationList) {
+            if (node.initializer.kind === SyntaxKind.VariableDeclarationList1) {
                 var variableDeclarationList = <VariableDeclarationList>node.initializer;
-                if (variableDeclarationList.declarations.length >= 1) {
-                    var decl = variableDeclarationList.declarations[0];
+                if (variableDeclarationList.length >= 1) {
+                    var decl = variableDeclarationList[0];
                     checkVariableDeclaration(decl);
                     if (decl.type) {
                         error(decl, Diagnostics.The_left_hand_side_of_a_for_in_statement_cannot_use_a_type_annotation);
@@ -9304,7 +9304,7 @@ module ts {
                 case SyntaxKind.TryStatement:
                 case SyntaxKind.CatchClause:
                 case SyntaxKind.VariableDeclaration:
-                case SyntaxKind.VariableDeclarationList:
+                // case SyntaxKind.VariableDeclarationList:
                 case SyntaxKind.ClassDeclaration:
                 case SyntaxKind.EnumDeclaration:
                 case SyntaxKind.EnumMember:
@@ -10683,21 +10683,21 @@ module ts {
         }
 
         function checkGrammarVariableDeclarationList(declarationList: VariableDeclarationList): boolean {
-            var declarations = declarationList.declarations;
-            if (checkGrammarForDisallowedTrailingComma(declarationList.declarations)) {
+            var declarations = declarationList;
+            if (checkGrammarForDisallowedTrailingComma(declarationList)) {
                 return true;
             }
 
-            if (!declarationList.declarations.length) {
-                return grammarErrorAtPos(getSourceFileOfNode(declarationList), declarations.pos, declarations.end - declarations.pos, Diagnostics.Variable_declaration_list_cannot_be_empty);
+            if (!declarationList.length) {
+                return grammarErrorAtPos(/*getSourceFileOfNode(declarationList)*/ undefined, declarations.pos, declarations.end - declarations.pos, Diagnostics.Variable_declaration_list_cannot_be_empty);
             }
 
             if (compilerOptions.target  < ScriptTarget.ES6) {
-                if (isLet(declarationList)) {
-                    return grammarErrorOnFirstToken(declarationList, Diagnostics.let_declarations_are_only_available_when_targeting_ECMAScript_6_and_higher);
+                if (isLet(declarationList[0])) {
+                    return grammarErrorOnFirstToken(declarationList[0], Diagnostics.let_declarations_are_only_available_when_targeting_ECMAScript_6_and_higher);
                 }
-                else if (isConst(declarationList)) {
-                    return grammarErrorOnFirstToken(declarationList, Diagnostics.const_declarations_are_only_available_when_targeting_ECMAScript_6_and_higher);
+                else if (isConst(declarationList[0])) {
+                    return grammarErrorOnFirstToken(declarationList[0], Diagnostics.const_declarations_are_only_available_when_targeting_ECMAScript_6_and_higher);
                 }
             }
         }
@@ -10720,10 +10720,10 @@ module ts {
 
         function checkGrammarForDisallowedLetOrConstStatement(node: VariableStatement) {
             if (!allowLetAndConstDeclarations(node.parent)) {
-                if (isLet(node.declarationList)) {
+                if (isLet(node.declarationList[0])) {
                     return grammarErrorOnNode(node, Diagnostics.let_declarations_can_only_be_declared_inside_a_block);
                 }
-                else if (isConst(node.declarationList)) {
+                else if (isConst(node.declarationList[0])) {
                     return grammarErrorOnNode(node, Diagnostics.const_declarations_can_only_be_declared_inside_a_block);
                 }
             }

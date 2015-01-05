@@ -1008,20 +1008,20 @@ module ts {
         }
 
         function emitVariableStatement(node: VariableStatement) {
-            var hasDeclarationWithEmit = forEach(node.declarationList.declarations, varDeclaration => resolver.isDeclarationVisible(varDeclaration));
+            var hasDeclarationWithEmit = forEach(node.declarationList, varDeclaration => resolver.isDeclarationVisible(varDeclaration));
             if (hasDeclarationWithEmit) {
                 emitJsDocComments(node);
                 emitModuleElementDeclarationFlags(node);
-                if (isLet(node.declarationList)) {
+                if (isLet(node.declarationList[0])) {
                     write("let ");
                 }
-                else if (isConst(node.declarationList)) {
+                else if (isConst(node.declarationList[0])) {
                     write("const ");
                 }
                 else {
                     write("var ");
                 }
-                emitCommaList(node.declarationList.declarations, emitVariableDeclaration);
+                emitCommaList(node.declarationList, emitVariableDeclaration);
                 write(";");
                 writeLine();
             }
@@ -2685,9 +2685,9 @@ module ts {
                 var endPos = emitToken(SyntaxKind.ForKeyword, node.pos);
                 write(" ");
                 endPos = emitToken(SyntaxKind.OpenParenToken, endPos);
-                if (node.initializer && node.initializer.kind === SyntaxKind.VariableDeclarationList) {
+                if (node.initializer && node.initializer.kind === SyntaxKind.VariableDeclarationList1) {
                     var variableDeclarationList = <VariableDeclarationList>node.initializer;
-                    var declarations = variableDeclarationList.declarations;
+                    var declarations = variableDeclarationList;
                     if (declarations[0] && isLet(declarations[0])) {
                         emitToken(SyntaxKind.LetKeyword, endPos);
                     }
@@ -2698,10 +2698,10 @@ module ts {
                         emitToken(SyntaxKind.VarKeyword, endPos);
                     }
                     write(" ");
-                    emitCommaList(variableDeclarationList.declarations);
+                    emitCommaList(variableDeclarationList);
                 }
                 else if (node.initializer) {
-                    emit(node.initializer);
+                    emit(<Expression>node.initializer);
                 }
                 write(";");
                 emitOptional(" ", node.condition);
@@ -2715,10 +2715,10 @@ module ts {
                 var endPos = emitToken(SyntaxKind.ForKeyword, node.pos);
                 write(" ");
                 endPos = emitToken(SyntaxKind.OpenParenToken, endPos);
-                if (node.initializer.kind === SyntaxKind.VariableDeclarationList) {
+                if (node.initializer.kind === SyntaxKind.VariableDeclarationList1) {
                     var variableDeclarationList = <VariableDeclarationList>node.initializer;
-                    if (variableDeclarationList.declarations.length >= 1) {
-                        var decl = variableDeclarationList.declarations[0];
+                    if (variableDeclarationList.length >= 1) {
+                        var decl = variableDeclarationList[0];
                         if (isLet(decl)) {
                             emitToken(SyntaxKind.LetKeyword, endPos);
                         }
@@ -2730,7 +2730,7 @@ module ts {
                     }
                 }
                 else {
-                    emit(node.initializer);
+                    emit(<Expression>node.initializer);
                 }
                 write(" in ");
                 emit(node.expression);
@@ -3093,17 +3093,17 @@ module ts {
             function emitVariableStatement(node: VariableStatement) {
                 emitLeadingComments(node);
                 if (!(node.flags & NodeFlags.Export)) {
-                    if (isLet(node.declarationList)) {
+                    if (isLet(node.declarationList[0])) {
                         write("let ");
                     }
-                    else if (isConst(node.declarationList)) {
+                    else if (isConst(node.declarationList[0])) {
                         write("const ");
                     }
                     else {
                         write("var ");
                     }
                 }
-                emitCommaList(node.declarationList.declarations);
+                emitCommaList(node.declarationList);
                 write(";");
                 emitTrailingComments(node);
             }

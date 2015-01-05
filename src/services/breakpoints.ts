@@ -83,7 +83,7 @@ module ts.BreakpointResolver {
                 switch (node.kind) {
                     case SyntaxKind.VariableStatement:
                         // Span on first variable declaration
-                        return spanInVariableDeclaration((<VariableStatement>node).declarationList.declarations[0]);
+                        return spanInVariableDeclaration((<VariableStatement>node).declarationList[0]);
 
                     case SyntaxKind.VariableDeclaration:
                     case SyntaxKind.PropertyDeclaration:
@@ -266,11 +266,11 @@ module ts.BreakpointResolver {
                 }
 
                 var isParentVariableStatement = variableDeclaration.parent.parent.kind === SyntaxKind.VariableStatement;
-                var isDeclarationOfForStatement = variableDeclaration.parent.parent.kind === SyntaxKind.ForStatement && contains((<VariableDeclarationList>(<ForStatement>variableDeclaration.parent.parent).initializer).declarations, variableDeclaration);
+                var isDeclarationOfForStatement = variableDeclaration.parent.parent.kind === SyntaxKind.ForStatement && contains((<VariableDeclarationList>(<ForStatement>variableDeclaration.parent).initializer), variableDeclaration);
                 var declarations = isParentVariableStatement
-                    ? (<VariableStatement>variableDeclaration.parent.parent).declarationList.declarations
+                    ? (<VariableStatement>variableDeclaration.parent.parent).declarationList
                     : isDeclarationOfForStatement
-                        ? (<VariableDeclarationList>(<ForStatement>variableDeclaration.parent.parent).initializer).declarations
+                        ? (<VariableDeclarationList>(<ForStatement>variableDeclaration.parent.parent).initializer)
                         : undefined;
 
                 // Breakpoint is possible in variableDeclaration only if there is initialization
@@ -375,14 +375,14 @@ module ts.BreakpointResolver {
 
             function spanInForStatement(forStatement: ForStatement): TextSpan {
                 if (forStatement.initializer) {
-                    if (forStatement.initializer.kind === SyntaxKind.VariableDeclarationList) {
+                    if (forStatement.initializer.kind === SyntaxKind.VariableDeclarationList1) {
                         var variableDeclarationList = <VariableDeclarationList>forStatement.initializer;
-                        if (variableDeclarationList.declarations.length > 0) {
-                            return spanInNode(variableDeclarationList.declarations[0]);
+                        if (variableDeclarationList.length > 0) {
+                            return spanInNode(variableDeclarationList[0]);
                         }
                     }
                     else {
-                        return spanInNode(forStatement.initializer);
+                        return spanInNode(<Expression>forStatement.initializer);
                     }
                 }
 
