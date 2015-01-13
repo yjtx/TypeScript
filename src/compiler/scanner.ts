@@ -548,8 +548,8 @@ module ts {
         precedingLineBreak: boolean = false;
         tokenIsUnterminated: boolean = false;
         error: (m: DiagnosticMessage, length?: number) => void;
-        text: string;
-        skipTrivia: boolean;
+        text: string = "";
+        skipTrivia: boolean = false;
 
         constructor(languageVersion: ScriptTarget, skipTrivia: boolean, text?: string, onError?: ErrorCallback) {
             this.languageVersion = languageVersion;
@@ -557,12 +557,6 @@ module ts {
             this.setText(text);
             this.error = onError || ((_: DiagnosticMessage) => { });
         }
-
-        //error(message: DiagnosticMessage, length?: number): void {
-        //    if (this.onError) {
-        //        this.onError(message, length || 0);
-        //    }
-        //}
 
         isIdentifierStart(ch: number): boolean {
             return ch >= CharacterCodes.A && ch <= CharacterCodes.Z || ch >= CharacterCodes.a && ch <= CharacterCodes.z ||
@@ -578,18 +572,18 @@ module ts {
 
         scanNumber(): number {
             var start = this.pos;
-            while (isDigit(this.text.charCodeAt(this.pos))) this.pos++;
-            if (this.text.charCodeAt(this.pos) === CharacterCodes.dot) {
+            while (this.pos < this.len && isDigit(this.text.charCodeAt(this.pos))) this.pos++;
+            if (this.pos < this.len && this.text.charCodeAt(this.pos) === CharacterCodes.dot) {
                 this.pos++;
-                while (isDigit(this.text.charCodeAt(this.pos))) this.pos++;
+                while (this.pos < this.len && isDigit(this.text.charCodeAt(this.pos))) this.pos++;
             }
             var end = this.pos;
-            if (this.text.charCodeAt(this.pos) === CharacterCodes.E || this.text.charCodeAt(this.pos) === CharacterCodes.e) {
+            if (this.pos < this.len && (this.text.charCodeAt(this.pos) === CharacterCodes.E || this.text.charCodeAt(this.pos) === CharacterCodes.e)) {
                 this.pos++;
-                if (this.text.charCodeAt(this.pos) === CharacterCodes.plus || this.text.charCodeAt(this.pos) === CharacterCodes.minus) this.pos++;
-                if (isDigit(this.text.charCodeAt(this.pos))) {
+                if (this.pos < this.len && (this.text.charCodeAt(this.pos) === CharacterCodes.plus || this.text.charCodeAt(this.pos) === CharacterCodes.minus)) this.pos++;
+                if (this.pos < this.len && isDigit(this.text.charCodeAt(this.pos))) {
                     this.pos++;
-                    while (isDigit(this.text.charCodeAt(this.pos))) this.pos++;
+                    while (this.pos < this.len && isDigit(this.text.charCodeAt(this.pos))) this.pos++;
                     end = this.pos;
                 }
                 else {
@@ -604,7 +598,7 @@ module ts {
             while (isOctalDigit(this.text.charCodeAt(this.pos))) {
                 this.pos++;
             }
-            return +(this.text.substring(start, this.pos));
+            return +this.text.substring(start, this.pos);
         }
 
         scanHexDigits(count: number, mustMatchCount?: boolean): number {
@@ -886,7 +880,9 @@ module ts {
                             continue;
                         }
                         else {
-                            if (ch === CharacterCodes.carriageReturn && this.pos + 1 < this.len && this.text.charCodeAt(this.pos + 1) === CharacterCodes.lineFeed) {
+                            if (ch === CharacterCodes.carriageReturn && 
+                                this.pos + 1 < this.len && 
+                                this.text.charCodeAt(this.pos + 1) === CharacterCodes.lineFeed) {
                                 // consume both CR and LF
                                 this.pos += 2;
                             }
@@ -910,8 +906,8 @@ module ts {
                             return this.token = SyntaxKind.WhitespaceTrivia;
                         }
                     case CharacterCodes.exclamation:
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
-                            if (this.text.charCodeAt(this.pos + 2) === CharacterCodes.equals) {
+                        if (this.pos + 1 < this.len && this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
+                            if (this.pos + 2 < this.len && this.text.charCodeAt(this.pos + 2) === CharacterCodes.equals) {
                                 return this.pos += 3, this.token = SyntaxKind.ExclamationEqualsEqualsToken;
                             }
                             return this.pos += 2, this.token = SyntaxKind.ExclamationEqualsToken;
@@ -924,16 +920,18 @@ module ts {
                     case CharacterCodes.backtick:
                         return this.token = this.scanTemplateAndSetTokenValue()
                     case CharacterCodes.percent:
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
+                        if (this.pos + 1 < this.len && this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
                             return this.pos += 2, this.token = SyntaxKind.PercentEqualsToken;
                         }
                         return this.pos++ , this.token = SyntaxKind.PercentToken;
                     case CharacterCodes.ampersand:
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.ampersand) {
-                            return this.pos += 2, this.token = SyntaxKind.AmpersandAmpersandToken;
-                        }
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
-                            return this.pos += 2, this.token = SyntaxKind.AmpersandEqualsToken;
+                        if (this.pos + 1 < this.len) {
+                            if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.ampersand) {
+                                return this.pos += 2, this.token = SyntaxKind.AmpersandAmpersandToken;
+                            }
+                            if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
+                                return this.pos += 2, this.token = SyntaxKind.AmpersandEqualsToken;
+                            }
                         }
                         return this.pos++ , this.token = SyntaxKind.AmpersandToken;
                     case CharacterCodes.openParen:
@@ -941,40 +939,48 @@ module ts {
                     case CharacterCodes.closeParen:
                         return this.pos++ , this.token = SyntaxKind.CloseParenToken;
                     case CharacterCodes.asterisk:
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
+                        if (this.pos + 1 < this.len && this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
                             return this.pos += 2, this.token = SyntaxKind.AsteriskEqualsToken;
                         }
                         return this.pos++ , this.token = SyntaxKind.AsteriskToken;
                     case CharacterCodes.plus:
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.plus) {
-                            return this.pos += 2, this.token = SyntaxKind.PlusPlusToken;
-                        }
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
-                            return this.pos += 2, this.token = SyntaxKind.PlusEqualsToken;
+                        if (this.pos + 1 < this.len) {
+                            if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.plus) {
+                                return this.pos += 2, this.token = SyntaxKind.PlusPlusToken;
+                            }
+                            if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
+                                return this.pos += 2, this.token = SyntaxKind.PlusEqualsToken;
+                            }
                         }
                         return this.pos++ , this.token = SyntaxKind.PlusToken;
                     case CharacterCodes.comma:
                         return this.pos++ , this.token = SyntaxKind.CommaToken;
                     case CharacterCodes.minus:
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.minus) {
-                            return this.pos += 2, this.token = SyntaxKind.MinusMinusToken;
-                        }
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
-                            return this.pos += 2, this.token = SyntaxKind.MinusEqualsToken;
+                        if (this.pos + 1 < this.len) {
+                            if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.minus) {
+                                return this.pos += 2, this.token = SyntaxKind.MinusMinusToken;
+                            }
+                            if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
+                                return this.pos += 2, this.token = SyntaxKind.MinusEqualsToken;
+                            }
                         }
                         return this.pos++ , this.token = SyntaxKind.MinusToken;
                     case CharacterCodes.dot:
-                        if (isDigit(this.text.charCodeAt(this.pos + 1))) {
-                            this.tokenValue = "" + this.scanNumber();
-                            return this.token = SyntaxKind.NumericLiteral;
-                        }
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.dot && this.text.charCodeAt(this.pos + 2) === CharacterCodes.dot) {
-                            return this.pos += 3, this.token = SyntaxKind.DotDotDotToken;
+                        if (this.pos + 1 < this.len) {
+                            if (isDigit(this.text.charCodeAt(this.pos + 1))) {
+                                this.tokenValue = "" + this.scanNumber();
+                                return this.token = SyntaxKind.NumericLiteral;
+                            }
+                            if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.dot && 
+                                this.pos + 2 < this.len && 
+                                this.text.charCodeAt(this.pos + 2) === CharacterCodes.dot) {
+                                return this.pos += 3, this.token = SyntaxKind.DotDotDotToken;
+                            }
                         }
                         return this.pos++ , this.token = SyntaxKind.DotToken;
                     case CharacterCodes.slash:
                         // Single-line comment
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.slash) {
+                        if (this.pos + 1 < this.len && this.text.charCodeAt(this.pos + 1) === CharacterCodes.slash) {
                             this.pos += 2;
 
                             while (this.pos < this.len) {
@@ -993,14 +999,17 @@ module ts {
                             }
                         }
                         // Multi-line comment
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.asterisk) {
+                        if (this.pos + 1 < this.len && this.text.charCodeAt(this.pos + 1) === CharacterCodes.asterisk) {
                             this.pos += 2;
 
                             var commentClosed = false;
                             while (this.pos < this.len) {
                                 var ch = this.text.charCodeAt(this.pos);
 
-                                if (ch === CharacterCodes.asterisk && this.text.charCodeAt(this.pos + 1) === CharacterCodes.slash) {
+                                if (ch === CharacterCodes.asterisk && 
+                                    this.pos + 1 < this.len && 
+                                    this.text.charCodeAt(this.pos + 1) === CharacterCodes.slash) {
+                                    
                                     this.pos += 2;
                                     commentClosed = true;
                                     break;
@@ -1025,7 +1034,7 @@ module ts {
                             }
                         }
 
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
+                        if (this.pos + 1 < this.len && this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
                             return this.pos += 2, this.token = SyntaxKind.SlashEqualsToken;
                         }
 
@@ -1050,7 +1059,7 @@ module ts {
                                 value = 0;
                             }
                             this.tokenValue = "" + value;
-                            return SyntaxKind.NumericLiteral;
+                            return this.token = SyntaxKind.NumericLiteral;
                         }
                         else if (this.pos + 2 < this.len && (this.text.charCodeAt(this.pos + 1) === CharacterCodes.O || this.text.charCodeAt(this.pos + 1) === CharacterCodes.o)) {
                             this.pos += 2;
@@ -1060,7 +1069,7 @@ module ts {
                                 value = 0;
                             }
                             this.tokenValue = "" + value;
-                            return SyntaxKind.NumericLiteral;
+                            return this.token = SyntaxKind.NumericLiteral;
                         }
                         // Try to parse as an octal
                         if (this.pos + 1 < this.len && isOctalDigit(this.text.charCodeAt(this.pos + 1))) {
@@ -1096,14 +1105,16 @@ module ts {
                             }
                         }
 
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.lessThan) {
-                            if (this.text.charCodeAt(this.pos + 2) === CharacterCodes.equals) {
-                                return this.pos += 3, this.token = SyntaxKind.LessThanLessThanEqualsToken;
+                        if (this.pos + 1 < this.len) {
+                            if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.lessThan) {
+                                if (this.pos + 2 < this.len && this.text.charCodeAt(this.pos + 2) === CharacterCodes.equals) {
+                                    return this.pos += 3, this.token = SyntaxKind.LessThanLessThanEqualsToken;
+                                }
+                                return this.pos += 2, this.token = SyntaxKind.LessThanLessThanToken;
                             }
-                            return this.pos += 2, this.token = SyntaxKind.LessThanLessThanToken;
-                        }
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
-                            return this.pos += 2, this.token = SyntaxKind.LessThanEqualsToken;
+                            if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
+                                return this.pos += 2, this.token = SyntaxKind.LessThanEqualsToken;
+                            }
                         }
                         return this.pos++ , this.token = SyntaxKind.LessThanToken;
                     case CharacterCodes.equals:
@@ -1117,14 +1128,16 @@ module ts {
                             }
                         }
 
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
-                            if (this.text.charCodeAt(this.pos + 2) === CharacterCodes.equals) {
-                                return this.pos += 3, this.token = SyntaxKind.EqualsEqualsEqualsToken;
+                        if (this.pos + 1 < this.len) {
+                            if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
+                                if (this.pos + 2 < this.len && this.text.charCodeAt(this.pos + 2) === CharacterCodes.equals) {
+                                    return this.pos += 3, this.token = SyntaxKind.EqualsEqualsEqualsToken;
+                                }
+                                return this.pos += 2, this.token = SyntaxKind.EqualsEqualsToken;
                             }
-                            return this.pos += 2, this.token = SyntaxKind.EqualsEqualsToken;
-                        }
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.greaterThan) {
-                            return this.pos += 2, this.token = SyntaxKind.EqualsGreaterThanToken;
+                            if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.greaterThan) {
+                                return this.pos += 2, this.token = SyntaxKind.EqualsGreaterThanToken;
+                            }
                         }
                         return this.pos++ , this.token = SyntaxKind.EqualsToken;
                     case CharacterCodes.greaterThan:
@@ -1146,18 +1159,20 @@ module ts {
                     case CharacterCodes.closeBracket:
                         return this.pos++ , this.token = SyntaxKind.CloseBracketToken;
                     case CharacterCodes.caret:
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
+                        if (this.pos + 1 < this.len && this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
                             return this.pos += 2, this.token = SyntaxKind.CaretEqualsToken;
                         }
                         return this.pos++ , this.token = SyntaxKind.CaretToken;
                     case CharacterCodes.openBrace:
                         return this.pos++ , this.token = SyntaxKind.OpenBraceToken;
                     case CharacterCodes.bar:
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.bar) {
-                            return this.pos += 2, this.token = SyntaxKind.BarBarToken;
-                        }
-                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
-                            return this.pos += 2, this.token = SyntaxKind.BarEqualsToken;
+                        if (this.pos + 1 < this.len) {
+                            if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.bar) {
+                                return this.pos += 2, this.token = SyntaxKind.BarBarToken;
+                            }
+                            if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
+                                return this.pos += 2, this.token = SyntaxKind.BarEqualsToken;
+                            }
                         }
                         return this.pos++ , this.token = SyntaxKind.BarToken;
                     case CharacterCodes.closeBrace:
@@ -1201,14 +1216,16 @@ module ts {
         reScanGreaterToken(): SyntaxKind {
             if (this.token === SyntaxKind.GreaterThanToken) {
                 if (this.text.charCodeAt(this.pos) === CharacterCodes.greaterThan) {
-                    if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.greaterThan) {
-                        if (this.text.charCodeAt(this.pos + 2) === CharacterCodes.equals) {
-                            return this.pos += 3, this.token = SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken;
+                    if (this.pos + 1 < this.len) {
+                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.greaterThan) {
+                            if (this.pos + 2 < this.len && this.text.charCodeAt(this.pos + 2) === CharacterCodes.equals) {
+                                return this.pos += 3, this.token = SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken;
+                            }
+                            return this.pos += 2, this.token = SyntaxKind.GreaterThanGreaterThanGreaterThanToken;
                         }
-                        return this.pos += 2, this.token = SyntaxKind.GreaterThanGreaterThanGreaterThanToken;
-                    }
-                    if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
-                        return this.pos += 2, this.token = SyntaxKind.GreaterThanGreaterThanEqualsToken;
+                        if (this.text.charCodeAt(this.pos + 1) === CharacterCodes.equals) {
+                            return this.pos += 2, this.token = SyntaxKind.GreaterThanGreaterThanEqualsToken;
+                        }
                     }
                     return this.pos++ , this.token = SyntaxKind.GreaterThanGreaterThanToken;
                 }
